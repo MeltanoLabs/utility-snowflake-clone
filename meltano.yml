@@ -1,0 +1,27 @@
+version: 1
+send_anonymous_usage_stats: true
+project_id: utility-snowflake-clone
+default_environment: dev
+requires_meltano: '>=4.0'
+environments:
+- name: dev
+plugins:
+  loaders:
+  - name: target-snowflake
+    variant: meltanolabs
+    pip_url: meltanolabs-target-snowflake
+  utilities:
+  - name: utility-snowflake-clone
+    namespace: utility_snowflake_clone
+    label: Snowflake Clone
+    description: Clone the workflow warehouse's Snowflake database, zero-copy, into a new database
+    pip_url: -e .
+    executable: utility-snowflake-clone
+    settings:
+    - name: destination_database
+      kind: string
+      label: Destination Database
+      description: The new database to clone into. Letters, digits, _ and $, starting with a letter
+        or _; Snowflake names it in upper case.
+    settings_group_validation:
+    - [destination_database]

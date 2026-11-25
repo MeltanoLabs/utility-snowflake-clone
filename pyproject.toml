@@ -1,0 +1,137 @@
+[build-system]
+requires = [
+    "hatchling>=1,<2",
+    "hatch-vcs>=0.5",
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "utility-snowflake-clone"
+dynamic = ["version"]
+description = "Meltano utility that clones a Snowflake database, zero-copy, into a new one, connecting as the workflow's target-snowflake warehouse."
+readme = "README.md"
+authors = [
+    { name = "Meltano" },
+]
+keywords = [
+    "ELT",
+    "Snowflake",
+    "zero-copy clone",
+    "Meltano",
+    "utility",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+license = "Apache-2.0"
+license-files = [ "LICENSE" ]
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8",
+    "cryptography>=42",
+    "snowflake-connector-python>=3.12,<5",
+]
+
+[project.scripts]
+utility-snowflake-clone = "utility_snowflake_clone.cli:main"
+
+[project.urls]
+Repository = "https://github.com/MeltanoLabs/utility-snowflake-clone"
+
+[dependency-groups]
+dev = [
+    { include-group = "test" },
+]
+test = [
+    "pytest>=8",
+]
+typing = [
+    "mypy>=1.10",
+]
+
+[tool.hatch.version]
+fallback-version = "0.1.0.dev0"
+source = "vcs"
+
+[tool.mypy]
+enable_error_code = [
+    "ignore-without-code",
+    "redundant-expr",
+    "truthy-bool",
+]
+warn_redundant_casts = true
+warn_unreachable = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["snowflake.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = [
+    "-ra",
+]
+filterwarnings = [
+    "error",
+]
+log_level = "INFO"
+testpaths = [
+    "tests",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+future-annotations = true
+ignore = [
+    "COM812",  # missing-trailing-comma
+    "CPY",     # copyright notices
+]
+select = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "ANN401",   # any-type: fakes of the connector
+    "D1",       # undocumented-*: a test's name says what it checks
+    "PLR2004",  # magic-value-comparison
+    "S101",     # assert
+    "S105",     # hardcoded-password-string
+    "S106",     # hardcoded-password-func-arg
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.tox]
+requires = [
+    "tox>=4.53",
+    "tox-uv>=1.35",
+]
+env_list = [
+    "typing",
+    { prefix = "3.", start = 10 },
+]
+
+[tool.tox.env_run_base]
+description = "run tests on Python {env_name}"
+runner = "uv-venv-lock-runner"
+pass_env = [
+    "CI",
+    "GITHUB_*",
+]
+dependency_groups = [ "test" ]
+commands = [ [ "pytest", { replace = "posargs", default = [ "tests" ], extend = true } ] ]
+
+[tool.tox.env.typing]
+description = "type checks"
+dependency_groups = [ "test", "typing" ]
+commands = [
+    [ "mypy", { replace = "posargs", default = [ "utility_snowflake_clone", "tests" ], extend = true } ],
+]
